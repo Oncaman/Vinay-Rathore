@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display PDF in HTML</title>
+    <style>
+        #pdf-viewer {
+            width: 100%;
+            max-width: 800px; /* Set max-width for the container */
+            margin: 0 auto; /* Center the PDF viewer */
+        }
+
+        canvas {
+            width: 100%; /* Make the canvas take up the full width of the container */
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+  <div id="pdf-viewer"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+<script>
+  var url = "vinay's website.pdf";
+
+  var pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
+  pdfjsLib.getDocument(url).promise.then(function(pdfDoc) {
+    for (var pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+      pdfDoc.getPage(pageNum).then(function(page) {
+        var viewport = page.getViewport({ scale: 1.0 }); // Initially set scale to 1.0
+        
+        // Calculate scale to fit width of the viewer
+        var containerWidth = document.getElementById('pdf-viewer').offsetWidth;
+        var scale = containerWidth / viewport.width;
+        viewport = page.getViewport({ scale: scale });
+
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        var renderContext = {
+          canvasContext: context,
+          viewport: viewport
+        };
+
+        page.render(renderContext).promise.then(function() {
+          document.getElementById('pdf-viewer').appendChild(canvas);
+        });
+      });
+    }
+  });
+</script>
+</body>
+</html>
